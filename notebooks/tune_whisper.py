@@ -2,11 +2,13 @@
 import torch
 from transformers import (
     AutoModelForSpeechSeq2Seq,
-    WhisperTokenizer,
     WhisperProcessor,
     pipeline,
 )
-from datasets import load_dataset
+from pydub import AudioSegment
+import numpy as np
+import librosa
+
 
 # %%
 MODEL_DIR = "./minio/model/whisper-large-v3"
@@ -21,10 +23,18 @@ model = AutoModelForSpeechSeq2Seq.from_pretrained(
 model.to(device)
 
 # %%
-# tokenizer = WhisperTokenizer.from_pretrained(MODEL_DIR)
+processor = WhisperProcessor.from_pretrained(MODEL_DIR)
 
 # %%
-processor = WhisperProcessor.from_pretrained(MODEL_DIR)
+audio_path = "notebooks/wavs/sample.wav"
+audio_array, sampling_rate = librosa.load(audio_path, sr=16000)
+
+# %%
+# input_features = processor(
+#     audio_array,
+#     sampling_rate=sampling_rate,
+#     return_tensors="pt",
+# ).input_features
 
 # %%
 pipe = pipeline(
@@ -37,14 +47,12 @@ pipe = pipeline(
 )
 
 # %%
-# replace this with own audio input
-test_ds = load_dataset("distil-whisper/librispeech_short", "clean", split="validation")
-sample = test_ds[0]["audio"]
-# %%
-sample
-# %%
-# Perform inference
-result = pipe(sample)
-print(result["text"])
+# test_ds = load_dataset("mozilla-foundation/common_voice_11_0", "en", split="test[:10]", trust_remote_code=True, streaming=True)
+# dataloader = DataLoader(test_ds, batch_size=1)
 
+# %%
+transcription = pipe(audio_array)["text"]
+
+# %%
+print(transcription)
 # %%
