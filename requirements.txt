@@ -1,0 +1,10 @@
+torch
+transformers
+datasets
+wandb
+evaluate
+matplotlib
+pycocoevalcap
+transformers
+datasets[audio]
+accelerate
