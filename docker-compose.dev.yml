@@ -3,7 +3,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: kalebrs/audiocategory-frontend:latest
+    image: kalebrs/audiocategory-frontend:latest # 
     env_file:
       - .env.dev
     depends_on:
