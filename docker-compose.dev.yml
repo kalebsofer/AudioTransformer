@@ -1,0 +1,54 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: kalebrs/audiocategory-frontend:latest
+    env_file:
+      - .env.dev
+    depends_on:
+      backend:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    ports:
+      - "8501:8501"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: kalebrs/audiocategory-backend:latest
+    env_file:
+      - .env.dev
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - app-network
+    ports:
+      - "8051:8051"
+
+  minio:
+    build:
+      context: ./minio
+      dockerfile: Dockerfile
+    image: kalebrs/audiocategory-minio:latest
+    env_file:
+      - .env.dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/audio
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  minio_data:
