@@ -21,7 +21,7 @@ model = AutoModelForSpeechSeq2Seq.from_pretrained(
 model.to(device)
 
 # %%
-tokenizer = WhisperTokenizer.from_pretrained(MODEL_DIR)
+# tokenizer = WhisperTokenizer.from_pretrained(MODEL_DIR)
 
 # %%
 processor = WhisperProcessor.from_pretrained(MODEL_DIR)
@@ -37,12 +37,14 @@ pipe = pipeline(
 )
 
 # %%
-# Load a sample dataset for testing
 # replace this with own audio input
-dataset = load_dataset("distil-whisper/librispeech_long", "clean", split="validation")
-sample = dataset[0]["audio"]
-
+test_ds = load_dataset("distil-whisper/librispeech_short", "clean", split="validation")
+sample = test_ds[0]["audio"]
+# %%
+sample
 # %%
 # Perform inference
 result = pipe(sample)
 print(result["text"])
+
+# %%
