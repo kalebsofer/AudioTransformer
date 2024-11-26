@@ -2,18 +2,21 @@
 import os
 import io
 import torch
-from PIL import Image
+from pydub import AudioSegment # replace with sounde equivalenet
 from minio import Minio
-from transformers import BlipProcessor, BlipForConditionalGeneration
+from transformers import WhisperProcessor, WhisperForConditionalGeneration  # WhISPER like model replace with teh right models
 from .config.settings import get_settings
+from AudioTransformer.backend.app.config import settings #MinIo setup
 
-settings = get_settings()
+settings = get_settings() MinIo settings
 
-class CaptionEngine:
+#benchmark_model_path = some_path 
+
+class TranscriptEngine:
 
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_dir = "local_model"
+        self.model_dir = "benchmark_model"
         self._initialize_minio_client()
         self._initialize_resources()
 
@@ -46,21 +49,23 @@ class CaptionEngine:
     def _initialize_resources(self):
         self._download_files_from_minio("model", "", self.model_dir)
 
-        self.processor = BlipProcessor.from_pretrained(
+        self.processor = WhisperProcessor.from_pretrained(
             self.model_dir, local_files_only=True
         )
-        self.model = BlipForConditionalGeneration.from_pretrained(
+        self.model = WhisperForConditionalGeneration.from_pretrained(
             self.model_dir, local_files_only=True
         )
         self.model.to(self.device)
         self.model.eval()
 
-    def get_caption(self, image_bytes: bytes) -> str:
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        inputs = self.processor(images=image, return_tensors="pt").to(self.device)
+    def get_tarnscript(self, audio_bytes: bytes) -> str:
+        audio = AudioSegment.from_wav(io.BytesIO(audio_bytes)) # CHECK FILE TYPE
+        audio = audio.set_channels(1).set_frame_rate(16000)
+        inputs = self.processor(audio, return_tensors="pt").unputs.to(self.device)
 
         with torch.no_grad():
-            caption_ids = self.model.generate(**inputs)
-            caption = self.processor.decode(caption_ids[0], skip_special_tokens=True)
+            logits = self.model(inputs),logits
+            transcripts_ids = torch.argmax(logits, dim = 1)
+            transcripts = self.processor.decode(transcripts_ids[0], skip_special_tokens=True)
 
-        return caption
+        return transcripts
