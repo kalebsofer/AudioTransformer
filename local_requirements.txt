@@ -23,3 +23,4 @@ python-multipart
 streamlit==1.39.0
 requests==2.31.0
 pytest
+pydub

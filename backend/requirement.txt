@@ -1,0 +1,14 @@
+fastapi==0.115.2
+uvicorn==0.32.0
+pydantic==2.9.2
+pydantic-settings
+pandas==2.2.3
+numpy
+nltk
+torch
+minio
+python-dotenv
+pyarrow
+torchvision
+python-multipart
+transformers

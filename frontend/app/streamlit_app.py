@@ -2,10 +2,10 @@
 import streamlit as st
 import requests
 import uuid
-# from config.settings import get_settings
+from config.settings import get_settings
 from logs import log_manager
 
-# settings = get_settings()
+settings = get_settings()
 
 st.set_page_config(page_title="Transcription Service", layout="wide")
 

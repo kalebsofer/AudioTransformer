@@ -1,1 +1,3 @@
-FROM python:3.11-slim
+FROM postgres:15-alpine
+
+COPY init.sql /docker-entrypoint-initdb.d/

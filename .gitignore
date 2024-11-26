@@ -24,6 +24,8 @@ env/
 ENV/
 .env
 
+local_requirements.txt
+
 .idea/
 .vscode/
 *.swp
