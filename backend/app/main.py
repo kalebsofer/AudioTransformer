@@ -1,8 +1,8 @@
 # handle back/front api here
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from .audio_engine import TranscriptEngine
-from .utils.img_to_minio import upload_image_to_minio
+from .transcription_engine import TranscriptionEngine
+from .utils.voice_to_minio import upload_audio_to_minio
 
 app = FastAPI()
 
@@ -19,7 +19,7 @@ transcript_engine = None
 @app.on_event("startup")
 async def startup_event():
     global transcript_engine
-    transcript_engine = TranscriptEngine()
+    transcript_engine = TranscriptionEngine()
 
 @app.get("/health")
 async def health_check():
@@ -35,7 +35,7 @@ async def generate_transcript(
 
     try:
         audio_bytes = await file.read()
-        upload_image_to_minio(audio_bytes, audio_id)
+        upload_audio_to_minio(audio_bytes, audio_id)
         transcript = transcript_engine.get_caption(audio_bytes)
         return {
             "transcript": transcript,

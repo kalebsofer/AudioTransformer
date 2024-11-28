@@ -5,7 +5,7 @@ from ..config.settings import get_settings
 settings = get_settings()
 
 
-def upload_image_to_minio(image_bytes: bytes, image_id: str) -> None:
+def upload_audio_to_minio(image_bytes: bytes, image_id: str) -> None:
 
     try:
         minio_client = Minio(

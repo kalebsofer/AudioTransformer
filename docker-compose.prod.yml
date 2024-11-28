@@ -1,0 +1,36 @@
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./backend/app
+      dockerfile: Dockerfile
+    container_name: transcription_app
+    environment:
+      - MINIO_URL=http://minio:9000
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_SECURE=False
+    depends_on:
+      - minio
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+volumes:
+  minio_data:

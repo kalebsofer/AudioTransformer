@@ -12,3 +12,4 @@ pyarrow
 torchvision
 python-multipart
 transformers
+librosa

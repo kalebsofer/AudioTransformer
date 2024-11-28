@@ -1,6 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
-
+from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     MINIO_URL: str
@@ -9,8 +8,8 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
 
     class Config:
-        env_file = f".env.{os.getenv('ENVIRONMENT', 'dev')}"
-
+        env_file = ".env"
+        extra = "ignore"  # Ignore extra fields
 
 def get_settings() -> Settings:
     return Settings()
