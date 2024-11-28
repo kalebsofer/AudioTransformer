@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   nginx:
     build:
@@ -78,7 +76,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio_data:/data
+      - minio_model:/model
+      - minio_audio:/audio
     networks:
       - app-network
 
@@ -116,7 +115,9 @@ networks:
     driver: bridge
 
 volumes:
-  minio_data:
+  minio_model:
+    driver: local
+  minio_audio:
     driver: local
   postgres_data:
     driver: local

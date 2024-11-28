@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-minio server --console-address ":9001" /data &
+minio server --console-address ":9001" /model /audio &
 
 echo "Waiting for MinIO to be ready..."
 until curl -sf "http://localhost:9000/minio/health/live"; do

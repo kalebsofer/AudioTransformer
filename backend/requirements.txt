@@ -9,7 +9,6 @@ torch
 minio
 python-dotenv
 pyarrow
-torchvision
 python-multipart
 transformers
 librosa

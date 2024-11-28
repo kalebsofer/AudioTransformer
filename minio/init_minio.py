@@ -4,28 +4,23 @@ from pathlib import Path
 
 
 def init_minio():
-    """Initialize MinIO with data and audio buckets and required files."""
+    """Initialize MinIO with model and audio buckets and required files."""
 
     client = Minio(
-        "localhost:9000",
-        access_key=os.getenv("MINIO_ROOT_USER", "minioadmin"),
-        secret_key=os.getenv("MINIO_ROOT_PASSWORD", "minioadmin"),
-        secure=os.getenv("MINIO_SECURE", "false").lower() == "true",
+        os.getenv("MINIO_URL"),
+        access_key=os.getenv("MINIO_ROOT_USER"),
+        secret_key=os.getenv("MINIO_ROOT_PASSWORD"),
+        secure=False,
     )
 
-    try:
-        if not client.bucket_exists("model"):
-            print("Creating bucket: model")
-            client.make_bucket("model")
-    except Exception as e:
-        print(f"Error creating bucket model: {e}")
-
-    try:
-        if not client.bucket_exists("audio"):
-            print("Creating bucket: audio")
-            client.make_bucket("audio")
-    except Exception as e:
-        print(f"Error creating bucket audio: {e}")
+    for bucket in ["model", "audio"]:
+        try:
+            if not client.bucket_exists(bucket):
+                print(f"Creating bucket: {bucket}")
+                client.make_bucket(bucket)
+                print(f"Successfully created {bucket} bucket")
+        except Exception as e:
+            print(f"Error creating bucket {bucket}: {e}")
 
     model_dir = Path("/model")
     for file_path in model_dir.glob("*"):
@@ -36,9 +31,7 @@ def init_minio():
                 print(f"File {file_name} already exists in bucket")
             except:
                 try:
-                    print(f"Uploading {file_name} to bucket")
                     client.fput_object("model", file_name, str(file_path))
-                    print(f"Successfully uploaded {file_name}")
                 except Exception as e:
                     print(f"Error uploading {file_name}: {e}")
 

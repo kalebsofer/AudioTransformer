@@ -51,3 +51,6 @@ wandb/
 minio/model/
 
 local_requirements.txt
+
+certificates/
+certificates-data/

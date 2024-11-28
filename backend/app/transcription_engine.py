@@ -1,13 +1,13 @@
 import os
 import io
 import torch
+import librosa
 from minio import Minio
 from transformers import (
     AutoModelForSpeechSeq2Seq,
     WhisperProcessor,
 )
 from .config.settings import get_settings
-import librosa
 
 settings = get_settings()
 
@@ -16,7 +16,7 @@ class TranscriptionEngine:
 
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_dir = "local_model"
+        self.model_dir = "/model"
         self._initialize_minio_client()
         self._initialize_resources()
 
@@ -36,13 +36,14 @@ class TranscriptionEngine:
             )
             os.makedirs(local_dir, exist_ok=True)
             for obj in objects:
+                if obj.object_name.startswith(".minio.sys") or "/" in obj.object_name:
+                    continue
                 file_path = os.path.join(local_dir, os.path.basename(obj.object_name))
                 try:
                     response = self.minio_client.get_object(bucket, obj.object_name)
                     with open(file_path, "wb") as file_data:
                         for data in response.stream(32 * 1024):
                             file_data.write(data)
-                    print(f"Downloaded {obj.object_name} to {file_path}")
                 except Exception as e:
                     raise Exception(f"Error downloading {obj.object_name}: {str(e)}")
 
@@ -59,16 +60,21 @@ class TranscriptionEngine:
         self.model.eval()
 
     def get_transcript(self, audio_bytes: bytes) -> str:
-        audio_array, sampling_rate = librosa.load(io.BytesIO(audio_bytes), sr=16000)
+        try:
+            audio_array, sampling_rate = librosa.load(io.BytesIO(audio_bytes), sr=16000)
 
-        inputs = self.processor(
-            audio_array, sampling_rate=sampling_rate, return_tensors="pt"
-        ).to(self.device)
+            inputs = self.processor(
+                audio_array, sampling_rate=sampling_rate, return_tensors="pt"
+            ).to(self.device)
 
-        with torch.no_grad():
-            transcript_ids = self.model.generate(**inputs)
-            transcript = self.processor.decode(
-                transcript_ids[0], skip_special_tokens=True
-            )
+            with torch.no_grad():
+                transcript_ids = self.model.generate(**inputs)
+                transcript = self.processor.decode(
+                    transcript_ids[0], skip_special_tokens=True
+                )
 
-        return transcript
+            return transcript
+
+        except Exception as e:
+            print(f"Error in get_transcript: {str(e)}")
+            raise Exception(f"Transcription failed: {str(e)}")

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .transcription_engine import TranscriptionEngine
 from .utils.audio_to_minio import upload_audio_to_minio
@@ -15,35 +15,38 @@ app.add_middleware(
 
 transcription_engine = None
 
-
 @app.on_event("startup")
 async def startup_event():
     global transcription_engine
     transcription_engine = TranscriptionEngine()
 
-
 @app.get("/health")
 async def health_check():
+    if transcription_engine is None:
+        return {"status": "unhealthy", "message": "TranscriptionEngine not initialized"}
     return {"status": "healthy"}
 
 
 @app.post("/generate-transcription")
 async def generate_transcription(
-    file: UploadFile = File(...), audio_id: str = Form(...)
+    audio_file: UploadFile = File(...), audio_id: str = Form(...)
 ) -> dict:
+
     if not transcription_engine:
+        print("TranscriptionEngine not initialized")
         raise HTTPException(
-            status_code=503, detail="Transcription engine not initialized"
+            status_code=500, detail="TranscriptionEngine not initialized"
         )
 
     try:
-        audio_bytes = await file.read()
-        upload_audio_to_minio(audio_bytes, audio_id, file.filename.split(".")[-1])
-        transcription = transcription_engine.get_transcript(audio_bytes)
-        return {
-            "transcription": transcription,
-        }
+        audio_bytes = await audio_file.read()
+        file_extension = audio_file.filename.split(".")[-1]
+
+        upload_audio_to_minio(audio_bytes, audio_id, file_extension)
+        transcript = transcription_engine.get_transcript(audio_bytes)
+        return {"transcript": transcript}
     except Exception as e:
+        print(f"Error during transcription: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
