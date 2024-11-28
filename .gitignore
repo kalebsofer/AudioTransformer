@@ -49,3 +49,8 @@ doc-index-64.faiss
 !.env.example
 wandb/
 minio/model/
+
+local_requirements.txt
+
+certificates/
+certificates-data/

@@ -1,0 +1,9 @@
+streamlit==1.39.0
+requests==2.31.0
+pydantic==2.9.2
+pydantic-settings
+python-dotenv
+torch
+nltk
+pytest
+pandas
