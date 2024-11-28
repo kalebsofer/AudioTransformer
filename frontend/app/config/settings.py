@@ -3,10 +3,13 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    MINIO_URL: str
-    MINIO_ROOT_USER: str
-    MINIO_ROOT_PASSWORD: str
-    MINIO_SECURE: bool = False
+    BACKEND_URL: str
+    TIMEOUT_SECONDS: int = 30
+
+    if os.getenv("ENVIRONMENT") == "prod":
+        POSTGRES_USER: str
+        POSTGRES_PASSWORD: str
+        POSTGRES_DB: str
 
     class Config:
         env_file = f".env.prod"  # hardcode for now

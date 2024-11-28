@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: kalebrs/audiotranscribe-nginx:latest
+    env_file:
+      - .env.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certificates:/etc/letsencrypt:rw
+      - ./certificates-data:/var/lib/letsencrypt:rw
+      - ./nginx/www:/var/www/html:rw
+    networks:
+      - app-network
+    depends_on:
+      - frontend
+      - backend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certificates:/etc/letsencrypt
+      - ./certificates-data:/var/lib/letsencrypt
+      - ./nginx:/etc/nginx/conf.d
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --webroot -w /var/www/html && docker exec nginx nginx -s reload; done'"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: kalebrs/audiotranscribe-frontend:latest
+    env_file:
+      - .env.prod
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "8501:8501"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: kalebrs/audiotranscribe-backend:latest
+    env_file:
+      - .env.prod
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8051"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "8051:8051"
+
+  minio:
+    build:
+      context: ./minio
+      dockerfile: Dockerfile
+    image: kalebrs/audiotranscribe-minio:latest
+    env_file:
+      - .env.prod
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    image: kalebrs/audiotranscribe-postgres:latest
+    env_file:
+      - .env.prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    env_file:
+      - .env.prod
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  minio_data:
+    driver: local
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
