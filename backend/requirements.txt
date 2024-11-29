@@ -12,3 +12,4 @@ pyarrow
 python-multipart
 transformers
 librosa
+protobuf

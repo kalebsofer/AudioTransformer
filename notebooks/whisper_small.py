@@ -1,12 +1,6 @@
 # %%
 import torch
-from transformers import (
-    AutoModelForSpeechSeq2Seq,
-    WhisperProcessor,
-    pipeline,
-)
-from pydub import AudioSegment
-import numpy as np
+from transformers import WhisperForConditionalGeneration, WhisperProcessor, pipeline
 import librosa
 
 
@@ -17,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 # %%
-model = AutoModelForSpeechSeq2Seq.from_pretrained(
+model = WhisperForConditionalGeneration.from_pretrained(
     MODEL_DIR, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
 )
 model.to(device)
@@ -55,4 +49,7 @@ transcription = pipe(audio_array)["text"]
 
 # %%
 print(transcription)
+# %%
+print("This is a test recording for the Overfitting Overlords")
+
 # %%
