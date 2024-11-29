@@ -22,7 +22,7 @@ def check_backend_health():
     return False
 
 
-with st.spinner("Loading Transcription Engine..."):
+with st.spinner("Loading Engine..."):
     while not check_backend_health():
         time.sleep(2)
 

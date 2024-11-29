@@ -7,6 +7,7 @@ images=(
   "audiotranscribe-backend"
   "audiotranscribe-postgres"
   "audiotranscribe-minio"
+  "audiotranscribe-nginx"
 )
 
 for image in "${images[@]}"; do
