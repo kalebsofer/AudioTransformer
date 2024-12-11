@@ -2,7 +2,12 @@
 
 [Frontend lives here](http://65.109.142.90:8501/)
 
-AudioTransformer is an ongoing personal project focused on deploying a fine-tuned version of Whisper for audio transcription. This project leverages a containerized architecture to manage and scale the transcription service.
+AudioTransformer is an ongoing personal project based on [Whisper](https://github.com/openai/whisper), and fine-tuned on a [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. The project is fully containerized, scalable and modularised. It is deployed on a server I rent from Hetzner. 
+
+Whisper transformer architecture:
+
+![Whisper](public/images/whisper.png)
+
 
 ## Project Overview
 
@@ -16,7 +21,7 @@ AudioTransformer is an ongoing personal project focused on deploying a fine-tune
 
 The application is deployed on a remote Hetzner server.
 
-## Architecture
+## Container Architecture
 
 The architecture is modular and scalable. Docker containers have a single purpose and are designed to be stateless.
 
