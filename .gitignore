@@ -49,6 +49,7 @@ doc-index-64.faiss
 !.env.example
 wandb/
 minio/model/
+minio/model_hide/
 
 local_requirements.txt
 

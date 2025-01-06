@@ -11,6 +11,32 @@ st.set_page_config(page_title="Audio Transcription Service", layout="wide")
 
 st.title("Audio Transcription Service")
 
+st.write(
+    """
+    AudioTransformer is an ongoing personal project based on [Whisper](https://cdn.openai.com/papers/whisper.pdf), and fine-tuned on a common_voice_11 for audio transcription tasks.
+    Training took a couple of hours on an [RTX A6000](https://www.runpod.io/pricing).
+""",
+    unsafe_allow_html=True,
+)
+
+with st.expander("How to Use", expanded=False):
+    st.write(
+        """
+    - Upload an audio file, MP3 or WAV, larger files will take longer to process.
+    - Hopefully, receive an accurate transcription.
+    - If not, please provide feedback and an accurate transcription.
+    - Your feedback will be passed to the model as <a href='https://huggingface.co/blog/rlhf' target='_blank'>reinforcement learning from human feedback (RLHF)</a>, improving the model performance with usage.
+    """,
+        unsafe_allow_html=True,
+    )
+
+st.info(
+    """
+    [The codebase lives here](https://github.com/kalebsofer/DeployAudioTransformer).
+    """,
+    icon=":material/info:",
+)
+
 
 def check_backend_health():
     try:
