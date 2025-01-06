@@ -1,33 +1,24 @@
 services:
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    image: kalebrs/audiotranscribe-nginx:latest
-    env_file:
-      - .env.prod
+  traefik:
+    image: "traefik:v3.2.2"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=kalebsofer@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--api.dashboard=true"
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./certificates:/etc/letsencrypt:rw
-      - ./certificates-data:/var/lib/letsencrypt:rw
-      - ./nginx/www:/var/www/html:rw
-    networks:
-      - app-network
-    depends_on:
-      - frontend
-      - backend
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certificates:/etc/letsencrypt
-      - ./certificates-data:/var/lib/letsencrypt
-      - ./nginx:/etc/nginx/conf.d
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --webroot -w /var/www/html && docker exec nginx nginx -s reload; done'"
+      - "letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - app-network
 
@@ -38,15 +29,27 @@ services:
     image: kalebrs/audiotranscribe-frontend:latest
     env_file:
       - .env.prod
+    depends_on:
+      backend:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      test: ["CMD", "curl", "-f", "http://localhost:8501/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     ports:
       - "8501:8501"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`simpletranscriptiontransformer.org`) || Host(`www.simpletranscriptiontransformer.org`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8501"
 
   backend:
     build:
@@ -55,13 +58,17 @@ services:
     image: kalebrs/audiotranscribe-backend:latest
     env_file:
       - .env.prod
+    depends_on:
+      minio:
+        condition: service_healthy
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8051"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://localhost:8051/health"]
+      interval: 20s
+      timeout: 30s
+      retries: 2
+      start_period: 60s
     ports:
       - "8051:8051"
 
@@ -72,6 +79,12 @@ services:
     image: kalebrs/audiotranscribe-minio:latest
     env_file:
       - .env.prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 30s
+      retries: 2
+      start_period: 60s
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -88,10 +101,16 @@ services:
     image: kalebrs/audiotranscribe-postgres:latest
     env_file:
       - .env.prod
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    ports:
+      - "5432:5432"
     networks:
       - app-network
 
@@ -99,27 +118,21 @@ services:
     image: dpage/pgadmin4:latest
     env_file:
       - .env.prod
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
+    depends_on:
+      - postgres
     networks:
       - app-network
     restart: unless-stopped
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
 
 networks:
   app-network:
+    name: app-network
     driver: bridge
 
 volumes:
-  minio_model:
-    driver: local
-  minio_audio:
-    driver: local
+  letsencrypt:
   postgres_data:
-    driver: local
-  pgadmin_data:
-    driver: local
+  minio_model:
+  minio_audio:
