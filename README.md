@@ -1,7 +1,8 @@
 # AudioTransformer
 
-Frontend lives here: [simpletranscriptiontransformer.org](https://simpletranscriptiontransformer.org/)
+### Frontend: [simpletranscriptiontransformer.org](https://simpletranscriptiontransformer.org/)
 
+## Overview
 AudioTransformer is an ongoing personal project based on [Whisper](https://github.com/openai/whisper), and fine-tuned on [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. The project is fully containerized and modularised. It is currently deployed on a remote Hetzner server costing me about £2/month. 
 
 Illustrated below, the Whisper architecture uses an encoder-decoder structure which is optimised for sequential audio rather than text, as in the [original transformer](https://arxiv.org/abs/1706.03762). 
