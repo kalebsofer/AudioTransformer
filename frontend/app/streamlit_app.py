@@ -13,7 +13,7 @@ st.title("Audio Transcription Tool")
 
 st.write(
     """
-    AudioTransformer is an ongoing personal project, a transcription service for audio files. The model architecture is based on [Whisper](https://cdn.openai.com/papers/whisper.pdf) and fine-tuned on a [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. 
+    AudioTransformer is a transcription tool for audio files, an ongoing personal project. The model architecture is based on [Whisper](https://cdn.openai.com/papers/whisper.pdf) and fine-tuned on [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. 
 """,
     unsafe_allow_html=True,
 )

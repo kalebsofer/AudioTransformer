@@ -1,8 +1,8 @@
 # AudioTransformer
 
-[Frontend lives here](http://65.109.142.90:8501/)
+Frontend lives here: [simpletranscriptiontransformer.org](https://simpletranscriptiontransformer.org/)
 
-AudioTransformer is an ongoing personal project based on [Whisper](https://github.com/openai/whisper), and fine-tuned on [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. The project is fully containerized and modularised. It is currently deployed on a remote Hetzner server costing me about £5/month. 
+AudioTransformer is an ongoing personal project based on [Whisper](https://github.com/openai/whisper), and fine-tuned on [common_voice_11](https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0) for audio transcription tasks. The project is fully containerized and modularised. It is currently deployed on a remote Hetzner server costing me about £2/month. 
 
 Illustrated below, the Whisper architecture uses an encoder-decoder structure which is optimised for sequential audio rather than text, as in the [original transformer](https://arxiv.org/abs/1706.03762). 
 
@@ -15,7 +15,7 @@ Preprocessing involves the creation of [mel-spectrograms](https://en.wikipedia.o
 
 Docker containers have a single purpose and are designed to be stateless:
 
-- **Frontend**: Hosted using a Streamlit server.
+- **Frontend**: Sends post requests to backend, hosted using a Streamlit server.
 - **Backend**: Retrieves the model and performs inference on incoming audio transcription requests.
 - **Storage**: MinIO is used to store the transcription model, and uploaded audio files for a short period of time.
 - **RDBS**: PostgreSQL is utilized to log user behavior and interactions.
@@ -56,7 +56,7 @@ Docker containers have a single purpose and are designed to be stateless:
 ## Deployment Steps
 
 1. **Update Domain References**:
-   - Search and replace all instances of `simpletranscriptiontransformer.org` in your repository with your actual domain name.
+   - Search and replace all instances of `simpletranscriptiontransformer.org` in the repository with your domain name.
 
 2. **Transfer Files to Remote**:
    - `scp` to copy `docker-compose.prod.yml` and `.env.prod` to your project folder on the remote server:
@@ -78,7 +78,3 @@ Docker containers have a single purpose and are designed to be stateless:
 ## Contributing
 
 Contributions to the project are welcome. Please feel free to open issues or submit pull requests for any improvements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
